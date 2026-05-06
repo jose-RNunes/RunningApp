@@ -16,6 +16,5 @@ fun mockLineGraphData() = listOf(
     LineGraphData(Color.Cyan, 10),
     LineGraphData(Color.Blue, 10),
     LineGraphData(Color.Green, 20),
-    LineGraphData(Color.Red, 15),
-    LineGraphData(Color.Cyan, 5)
+    LineGraphData(Color.Red, 15)
 )

@@ -1,12 +1,21 @@
 package br.com.jrrunningapp.graph
 
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -14,14 +23,50 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.PathEffect
+import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.tooling.preview.Preview
+import kotlin.text.toFloat
 
 @Composable
-fun RunningLineGraphBar(modifier: Modifier = Modifier, data: List<LineGraphData>) {
-    val barWidthDp = 34.dp
-    val spacingDp = 10.dp
-    val horizontalPaddingDp = 16.dp
-    val topPaddingDp = 20.dp
-    val bottomPaddingDp = 20.dp
+fun RunningLineGraphBar(
+    modifier: Modifier = Modifier,
+    data: List<LineGraphData>,
+    maxItems: Int = 8,
+    animationDurationMs: Int = 800
+) {
+    val density = LocalDensity.current
+    val spacingPx = remember { with(density) { 8.dp.toPx() } }
+    val horizontalPaddingPx = remember { with(density) { 16.dp.toPx() } }
+    val topPaddingPx = remember { with(density) { 20.dp.toPx() } }
+    val bottomPaddingPx = remember { with(density) { 20.dp.toPx() } }
+    val strokeWidthPx = remember { with(density) { 1.dp.toPx() } }
+    val cornerRadiusPx = remember { with(density) { 10.dp.toPx() } }
+
+    var animatedData by remember { mutableStateOf(mockLineGraphData().map {
+        it.copy(y = 0)
+    }) }
+
+    val displayedData = remember(data, maxItems) { data.take(maxItems) }
+    val maxBarValue = remember(displayedData) {
+        displayedData.maxOfOrNull { it.y }?.toFloat() ?: 1f
+    }
+
+    val pathEffect = remember { PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f) }
+
+    val animatedHeights = animatedData.mapIndexed { index, item ->
+        key(index) {
+            val animatedHeight by animateFloatAsState(
+                targetValue = item.y.toFloat(),
+                animationSpec = tween(durationMillis = animationDurationMs),
+                label = "barHeight_$index"
+            )
+            animatedHeight
+        }
+    }
+
+    LaunchedEffect(Unit) {
+        animatedData = data
+    }
 
     Column(
         modifier = modifier
@@ -30,15 +75,10 @@ fun RunningLineGraphBar(modifier: Modifier = Modifier, data: List<LineGraphData>
             .background(Color(0xFFF5F5F5))
     ) {
         Canvas(modifier = Modifier.fillMaxSize()) {
-
-            val maxBarValue = data.maxOfOrNull { it.y }?.toFloat() ?: 1f
-            val topPaddingPx = topPaddingDp.toPx()
-            val bottomPaddingPx = bottomPaddingDp.toPx()
+            val usableWidth = size.width - horizontalPaddingPx * 2
             val usableHeight = size.height - topPaddingPx - bottomPaddingPx
-
-            val barWidthPx = barWidthDp.toPx()
-            val spacingPx = spacingDp.toPx()
-            val horizontalPaddingPx = horizontalPaddingDp.toPx()
+            val sumSpacing = (displayedData.size - 1) * spacingPx
+            val barWidthPx = (usableWidth - sumSpacing) / displayedData.size
 
             val numLines = 5
             val lineSpacing = usableHeight / (numLines - 1)
@@ -48,13 +88,13 @@ fun RunningLineGraphBar(modifier: Modifier = Modifier, data: List<LineGraphData>
                     color = Color.LightGray.copy(alpha = 0.5f),
                     start = Offset(x = horizontalPaddingPx, y = y),
                     end = Offset(x = size.width - horizontalPaddingPx, y = y),
-                    strokeWidth = 1.dp.toPx(),
-                    pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
+                    strokeWidth = strokeWidthPx,
+                    pathEffect = pathEffect
                 )
             }
 
-            data.forEachIndexed { index, item ->
-                val barHeight = (item.y / maxBarValue) * usableHeight
+            displayedData.forEachIndexed { index, item ->
+                val barHeight = (animatedHeights[index] / maxBarValue) * usableHeight
 
                 val x = horizontalPaddingPx + (index * (barWidthPx + spacingPx))
 
@@ -64,9 +104,21 @@ fun RunningLineGraphBar(modifier: Modifier = Modifier, data: List<LineGraphData>
                     color = item.color,
                     topLeft = Offset(x = x, y = y),
                     size = Size(width = barWidthPx, height = barHeight),
-                    cornerRadius = CornerRadius(10.dp.toPx())
+                    cornerRadius = CornerRadius(cornerRadiusPx)
                 )
             }
         }
+    }
+}
+
+@Preview(showBackground = false)
+@Composable
+fun RunningLineGraphBarPreview() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp)
+    ) {
+        RunningLineGraphBar(data = mockLineGraphData())
     }
 }

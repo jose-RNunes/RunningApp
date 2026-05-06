@@ -30,8 +30,8 @@ data class RunningCardData(
 )
 
 enum class RunningCardSizeType(val size: Offset) {
-    DEFAULT(Offset(84.dp.value, 108.dp.value)),
-    BIG(Offset(128.dp.value, 108.dp.value))
+    DEFAULT(Offset(84.dp.value, 112.dp.value)),
+    BIG(Offset(128.dp.value, 112.dp.value))
 }
 
 @Composable
