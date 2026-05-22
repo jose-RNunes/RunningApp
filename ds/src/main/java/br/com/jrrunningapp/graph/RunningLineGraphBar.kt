@@ -24,13 +24,52 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Preview
-import kotlin.text.toFloat
+import androidx.compose.ui.unit.sp
+import br.com.jrrunningapp.theme.Primary_100
+import br.com.jrrunningapp.theme.Primary_200
+import br.com.jrrunningapp.theme.Primary_300
+import br.com.jrrunningapp.theme.Primary_50
+import br.com.jrrunningapp.theme.Warning_300
+import br.com.jrrunningapp.theme.Warning_500
+
+data class RunningLineGraphBarData(
+    val activities: List<RunningLineGraphBarActivityData>
+)
+
+enum class RunningLineGraphBarActivityStatusType(
+    val color: Color,
+    val status: String
+) {
+    REST(Warning_300, "Rest"),
+    RUN(Primary_200, "Run")
+}
+
+data class RunningLineGraphBarActivityData(
+    val color: Color,
+    val y: Int,
+    val time: String
+)
+
+fun mockLineGraphData() = listOf(
+    RunningLineGraphBarActivityData(Warning_500, 10, "06:00"),
+    RunningLineGraphBarActivityData(Warning_300, 20, "06:00"),
+    RunningLineGraphBarActivityData(Primary_100, 30, "06:20"),
+    RunningLineGraphBarActivityData(Primary_200, 40, "06:35"),
+    RunningLineGraphBarActivityData(Warning_300, 10, "06:35"),
+    RunningLineGraphBarActivityData(Primary_100, 20, "06:45"),
+    RunningLineGraphBarActivityData(Primary_200, 35, "07:00"),
+    RunningLineGraphBarActivityData(Primary_300, 40, "07:15")
+)
+
 
 @Composable
 fun RunningLineGraphBar(
     modifier: Modifier = Modifier,
-    data: List<LineGraphData>,
+    data: List<RunningLineGraphBarActivityData>,
     maxItems: Int = 8,
     animationDurationMs: Int = 800
 ) {
@@ -42,9 +81,14 @@ fun RunningLineGraphBar(
     val strokeWidthPx = remember { with(density) { 1.dp.toPx() } }
     val cornerRadiusPx = remember { with(density) { 10.dp.toPx() } }
 
-    var animatedData by remember { mutableStateOf(mockLineGraphData().map {
-        it.copy(y = 0)
-    }) }
+    val textMeasurer = rememberTextMeasurer()
+    val textStyle = TextStyle(color = Color.Gray, fontSize = 12.sp)
+
+    var animatedData by remember {
+        mutableStateOf(mockLineGraphData().map {
+            it.copy(y = 0)
+        })
+    }
 
     val displayedData = remember(data, maxItems) { data.take(maxItems) }
     val maxBarValue = remember(displayedData) {
@@ -82,6 +126,7 @@ fun RunningLineGraphBar(
 
             val numLines = 5
             val lineSpacing = usableHeight / (numLines - 1)
+
             repeat(numLines) { i ->
                 val y = topPaddingPx + (i * lineSpacing)
                 drawLine(
@@ -105,6 +150,16 @@ fun RunningLineGraphBar(
                     topLeft = Offset(x = x, y = y),
                     size = Size(width = barWidthPx, height = barHeight),
                     cornerRadius = CornerRadius(cornerRadiusPx)
+                )
+            }
+
+            data.forEachIndexed { index, data ->
+                val x = horizontalPaddingPx + (index * (barWidthPx + spacingPx))
+                drawText(
+                    textMeasurer = textMeasurer,
+                    text = data.time,
+                    style = textStyle,
+                    topLeft = Offset(x = x, y = size.height - 18.dp.toPx()),
                 )
             }
         }
