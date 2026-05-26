@@ -28,6 +28,8 @@ val Warning_400 = Color(0xFFFBBD43)
 
 val Warning_500 = Color(0xFFFAAD14)
 
+val Transparent_500 = Color(0xFF18171C)
+
 
 
 

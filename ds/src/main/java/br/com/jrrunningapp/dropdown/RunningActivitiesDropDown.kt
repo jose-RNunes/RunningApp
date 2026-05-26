@@ -41,6 +41,7 @@ import androidx.compose.ui.unit.dp
 import br.com.jrrunningapp.text.RunningText
 import br.com.jrrunningapp.text.RunningTextData
 import br.com.jrrunningapp.text.RunningTextSizeType
+import br.com.jrrunningapp.theme.Transparent_500
 
 fun mockRunningActivitiesDropDownData() = listOf(
     "Today",
@@ -69,7 +70,7 @@ fun RunningActivitiesDropDown(
     val topCornerRadius by animateDpAsState(targetValue = if (expanded) 24.dp else 100.dp, label = "Top Corner")
     val bottomCornerRadius by animateDpAsState(targetValue = if (expanded) 0.dp else 100.dp, label = "Bottom Corner")
 
-    val backgroundColor = Color(0xFF0D0D10)
+    val backgroundColor = Transparent_500
     val borderColor = Color(0xFF232326)
 
     val containerShape = RoundedCornerShape(
@@ -89,7 +90,7 @@ fun RunningActivitiesDropDown(
                 .background(backgroundColor)
                 .border(BorderStroke(1.dp, borderColor), containerShape)
                 .clickable { expanded = true }
-                .padding(horizontal = 24.dp, vertical = 12.dp)
+                .padding(horizontal = 24.dp, vertical = 4.dp)
                 .animateContentSize(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(16.dp)

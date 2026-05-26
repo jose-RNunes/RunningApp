@@ -4,10 +4,14 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.Orientation
 import androidx.compose.foundation.gestures.scrollable
+import androidx.compose.foundation.layout.Arrangement.SpaceBetween
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.items
@@ -21,6 +25,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
@@ -37,14 +42,19 @@ import br.com.jrrunningapp.cards.RunningCardGoals
 import br.com.jrrunningapp.cards.RunningCardGoalsData
 import br.com.jrrunningapp.cards.RunningCardSizeType
 import br.com.jrrunningapp.cards.RunningLastActivityData
+import br.com.jrrunningapp.dropdown.RunningActivitiesDropDown
 import br.com.jrrunningapp.graph.RunningLineGraph
 import br.com.jrrunningapp.graph.RunningLineGraphBar
+import br.com.jrrunningapp.graph.RunningLineGraphBarData
 import br.com.jrrunningapp.graph.mockLineGraphData
 import br.com.jrrunningapp.graph.mockLineRunningLineGraphData
 import br.com.jrrunningapp.grid.RunningFlowGrid
 import br.com.jrrunningapp.grid.RunningGrid
+import br.com.jrrunningapp.text.RunningText
 import br.com.jrrunningapp.text.RunningTextData
 import br.com.jrrunningapp.text.RunningTextSizeType
+import br.com.jrrunningapp.theme.Neutral_1
+import br.com.jrrunningapp.theme.Primary_300
 import kotlinx.coroutines.delay
 import kotlin.text.toInt
 import kotlin.times
@@ -66,9 +76,29 @@ class MainActivity : ComponentActivity() {
                     ) {
 
                         item {
-                            val data = mockLineGraphData()
 
-                            RunningLineGraphBar(data = data)
+                            Row(
+                                modifier = Modifier.fillMaxWidth().background(Primary_300),
+                                horizontalArrangement = SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+
+                                val data = RunningTextData(
+                                    text = "Recent Activity",
+                                    textColor = Neutral_1,
+                                    textSize = RunningTextSizeType.MEDIUM,
+                                    fontWeight = FontWeight.Medium
+                                )
+
+                                RunningText(
+                                    data = data
+                                )
+
+                                RunningActivitiesDropDown()
+
+                            }
+
+                            RunningLineGraphBar(data = RunningLineGraphBarData())
                         }
 
                         item {

@@ -3,12 +3,20 @@ package br.com.jrrunningapp.graph
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Canvas
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
@@ -16,6 +24,7 @@ import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
@@ -24,11 +33,17 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.drawText
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.rememberTextMeasurer
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.sp
+import br.com.jrrunningapp.R
+import br.com.jrrunningapp.text.RunningText
+import br.com.jrrunningapp.text.RunningTextData
+import br.com.jrrunningapp.text.RunningTextSizeType
 import br.com.jrrunningapp.theme.Primary_100
 import br.com.jrrunningapp.theme.Primary_200
 import br.com.jrrunningapp.theme.Primary_300
@@ -37,15 +52,16 @@ import br.com.jrrunningapp.theme.Warning_300
 import br.com.jrrunningapp.theme.Warning_500
 
 data class RunningLineGraphBarData(
-    val activities: List<RunningLineGraphBarActivityData>
+    val activities: List<RunningLineGraphBarActivityData> = mockLineGraphData(),
+    val statistic: String = "50% than yesterday"
 )
 
 enum class RunningLineGraphBarActivityStatusType(
     val color: Color,
     val status: String
 ) {
-    REST(Warning_300, "Rest"),
-    RUN(Primary_200, "Run")
+    RUN(Primary_200, "Run"),
+    REST(Warning_300, "Rest")
 }
 
 data class RunningLineGraphBarActivityData(
@@ -69,7 +85,7 @@ fun mockLineGraphData() = listOf(
 @Composable
 fun RunningLineGraphBar(
     modifier: Modifier = Modifier,
-    data: List<RunningLineGraphBarActivityData>,
+    data: RunningLineGraphBarData,
     maxItems: Int = 8,
     animationDurationMs: Int = 800
 ) {
@@ -90,7 +106,7 @@ fun RunningLineGraphBar(
         })
     }
 
-    val displayedData = remember(data, maxItems) { data.take(maxItems) }
+    val displayedData = remember(data, maxItems) { data.activities.take(maxItems) }
     val maxBarValue = remember(displayedData) {
         displayedData.maxOfOrNull { it.y }?.toFloat() ?: 1f
     }
@@ -109,15 +125,65 @@ fun RunningLineGraphBar(
     }
 
     LaunchedEffect(Unit) {
-        animatedData = data
+        animatedData = data.activities
     }
 
     Column(
         modifier = modifier
             .fillMaxWidth()
             .height(200.dp)
-            .background(Color(0xFFF5F5F5))
+            .background(Color.Black)
     ) {
+
+        Row(
+            modifier = Modifier
+                .padding(horizontal = 16.dp),
+            horizontalArrangement = Arrangement.Center,
+            verticalAlignment = Alignment.CenterVertically
+        ) {
+
+            RunningLineGraphBarActivityStatusType.entries.forEachIndexed { index, type ->
+                if (index == 1) {
+                    Spacer(modifier = Modifier.width(8.dp))
+                }
+
+                Box(
+                    modifier = Modifier
+                        .size(6.dp)
+                        .background(type.color, shape = CircleShape)
+                )
+
+                Spacer(modifier = Modifier.width(8.dp))
+
+                RunningText(
+                    data = RunningTextData(
+                        text = type.status,
+                        textSize = RunningTextSizeType.SMALL,
+                        textColor = Color.White,
+                        fontWeight = FontWeight.Normal
+                    )
+                )
+            }
+
+            Spacer(modifier = Modifier.weight(1f))
+
+            Image(
+                modifier = Modifier.size(16.dp),
+                painter = painterResource(id = R.drawable.ic_graph),
+                contentDescription = null
+            )
+
+            RunningText(
+                modifier = Modifier.padding(start = 8.dp),
+                data = RunningTextData(
+                    text = data.statistic,
+                    textSize = RunningTextSizeType.SMALL,
+                    textColor = Color.White,
+                    fontWeight = FontWeight.Normal
+                )
+            )
+        }
+
         Canvas(modifier = Modifier.fillMaxSize()) {
             val usableWidth = size.width - horizontalPaddingPx * 2
             val usableHeight = size.height - topPaddingPx - bottomPaddingPx
@@ -153,7 +219,7 @@ fun RunningLineGraphBar(
                 )
             }
 
-            data.forEachIndexed { index, data ->
+            data.activities.forEachIndexed { index, data ->
                 val x = horizontalPaddingPx + (index * (barWidthPx + spacingPx))
                 drawText(
                     textMeasurer = textMeasurer,
@@ -166,7 +232,7 @@ fun RunningLineGraphBar(
     }
 }
 
-@Preview(showBackground = false)
+@Preview(showBackground = true, backgroundColor = 0xFF000000)
 @Composable
 fun RunningLineGraphBarPreview() {
     Column(
@@ -174,6 +240,6 @@ fun RunningLineGraphBarPreview() {
             .fillMaxSize()
             .padding(16.dp)
     ) {
-        RunningLineGraphBar(data = mockLineGraphData())
+        RunningLineGraphBar(data = RunningLineGraphBarData())
     }
 }
